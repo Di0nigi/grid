@@ -37,12 +37,26 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
-              
               children: [
                 Padding(padding: EdgeInsets.all(12)),
-                Container( color: const Color.fromARGB(0, 255, 193, 7),child: Row(crossAxisAlignment: CrossAxisAlignment.end,mainAxisAlignment:MainAxisAlignment.center, children:  [Padding(padding: EdgeInsets.all(5)),Text("Grid",style: TextStyle(color: Color.fromARGB(160, 255, 255, 255),fontSize: 20,fontFamily: "ubuntu"),),],),
-                 ),
-              Container(
+                Container(
+                  color: const Color.fromARGB(0, 255, 193, 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(padding: EdgeInsets.all(5)),
+                      Text(
+                        "Grid",
+                        style: TextStyle(
+                            color: Color.fromARGB(160, 255, 255, 255),
+                            fontSize: 20,
+                            fontFamily: "ubuntu"),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
                     width: width - 10,
                     height: height - (height / 20) - 65,
                     padding: EdgeInsets.all(0),
@@ -100,7 +114,7 @@ Future<void> _pickImage() async {
   File? _image;
 
   if (pickedFile != null) {
-    _image = File( (await _cropImage(pickedFile.path))!.path);
+    _image = File((await _cropImage(pickedFile.path))!.path);
 
     photos.add(_image);
     len++;
@@ -131,18 +145,25 @@ Widget updateGrid() {
     ),
     itemCount: len, // Number of items in the grid
     itemBuilder: (context, index) {
-      return Container(
-        
-        padding: EdgeInsets.all(0),
-        decoration: BoxDecoration(
+      List<File> phReverse = photos.reversed.toList();
+      return GestureDetector(
+        child: Container(
+          padding: EdgeInsets.all(0),
+          decoration: BoxDecoration(
             color: const Color.fromARGB(0, 24, 255, 255),
-
-          borderRadius: BorderRadius.circular(0.0),
-          image: DecorationImage(
-              image: FileImage(photos[index]), // Load image from File
-              fit: BoxFit.cover,
-              alignment: FractionalOffset(0.5, 0.5)),
+            borderRadius: BorderRadius.circular(0.0),
+            image: DecorationImage(
+                image: FileImage(phReverse[index]), // Load image from File
+                fit: BoxFit.cover,
+                alignment: FractionalOffset(0.5, 0.5)),
+          ),
         ),
+        onDoubleTap: () {
+          photos.remove(phReverse[index]);
+          len--;
+          print(index);
+          print("doubleTap");
+        },
       );
     },
   );
