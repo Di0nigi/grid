@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 var width = 0.0;
 var height = 0.0;
 var len = 0;
+int n = 0;
 Widget grid = updateGrid();
 
 List<File> photos = [];
@@ -81,7 +82,19 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                    
+                    icon: Icon(
+                      FluentIcons.delete_16_filled,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        prefs!.clear();
+                        grid = updateGrid();
+                        n = 0;
+                        len = 0;
+                      });
+                    }),
+                IconButton(
                     icon: Icon(
                       FluentIcons.add_square_16_filled,
                       color: Colors.white,
@@ -91,11 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         grid = updateGrid();
                       });
-
-                     
                     }),
                 IconButton(
-                 
                     icon: Icon(
                       FluentIcons.arrow_sync_circle_16_regular,
                       color: Colors.white,
@@ -147,13 +157,12 @@ Widget updateGrid() {
   getSavedFiles();
   return GridView.builder(
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3, 
-      crossAxisSpacing: 2.0, 
-      mainAxisSpacing: 1.0, 
+      crossAxisCount: 3,
+      crossAxisSpacing: 2.0,
+      mainAxisSpacing: 1.0,
     ),
-    itemCount: len, 
+    itemCount: len,
     itemBuilder: (context, index) {
-     
       List<File> phReverse = photos.reversed.toList();
       return GestureDetector(
         child: Container(
@@ -162,18 +171,16 @@ Widget updateGrid() {
             color: const Color.fromARGB(0, 24, 255, 255),
             borderRadius: BorderRadius.circular(0.0),
             image: DecorationImage(
-                image: FileImage(phReverse[index]), 
+                image: FileImage(phReverse[index]),
                 fit: BoxFit.cover,
                 alignment: FractionalOffset(0.5, 0.5)),
           ),
         ),
         onDoubleTap: () {
-          print(photos.remove(photos[len-1-index]));
-          
-          
+          print(photos.remove(photos[len - 1 - index]));
+
           saveFiles(photos);
           len--;
-          
         },
       );
     },
@@ -181,30 +188,21 @@ Widget updateGrid() {
 }
 
 Future<void> saveFiles(List<File> files) async {
-  
   Directory appDocDir = await getApplicationDocumentsDirectory();
   String appDocPath = appDocDir.path;
 
- 
   List<String> newFilePaths = [];
-  
-  int n = 0;
 
   for (File file in files) {
     n++;
-    
-    String newPath =
-        '$appDocPath/${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
 
+    String newPath = '$appDocPath/image${n}';
 
     File savedFile = await file.copy(newPath);
 
-
     newFilePaths.add(savedFile.path);
-   
   }
 
- 
   prefs!.clear();
   photos = [];
 
@@ -215,13 +213,13 @@ Future<List<File>> getSavedFiles() async {
   prefs = await SharedPreferences.getInstance();
   photos = [];
   //prefs!.clear();
-  
+
   List<String>? filePaths = prefs!.getStringList('saved_files');
 
   if (filePaths != null) {
     photos = filePaths.map((path) => File(path)).toList();
     len = photos.length;
-  
+
     return [];
   } else {
     return [];
