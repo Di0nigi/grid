@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'main.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
+    setState(() {
+      grid = updateGrid();
+    });
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -75,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                    // Use the FluentIcons + name of the icon you want
+                    
                     icon: Icon(
                       FluentIcons.add_square_16_filled,
                       color: Colors.white,
@@ -86,10 +92,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         grid = updateGrid();
                       });
 
-                      print("Button pressed");
+                     
                     }),
                 IconButton(
-                    // Use the FluentIcons + name of the icon you want
+                 
                     icon: Icon(
                       FluentIcons.arrow_sync_circle_16_regular,
                       color: Colors.white,
@@ -118,6 +124,7 @@ Future<void> _pickImage() async {
 
     photos.add(_image);
     len++;
+    saveFiles(photos);
   } else {
     print('No image selected.');
   }
@@ -137,14 +144,16 @@ Future<CroppedFile?> _cropImage(String imageFile) async {
 }
 
 Widget updateGrid() {
+  getSavedFiles();
   return GridView.builder(
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3, // Number of columns in the grid
-      crossAxisSpacing: 2.0, // Space between columns
-      mainAxisSpacing: 1.0, // Space between rows
+      crossAxisCount: 3, 
+      crossAxisSpacing: 2.0, 
+      mainAxisSpacing: 1.0, 
     ),
-    itemCount: len, // Number of items in the grid
+    itemCount: len, 
     itemBuilder: (context, index) {
+     
       List<File> phReverse = photos.reversed.toList();
       return GestureDetector(
         child: Container(
@@ -153,18 +162,68 @@ Widget updateGrid() {
             color: const Color.fromARGB(0, 24, 255, 255),
             borderRadius: BorderRadius.circular(0.0),
             image: DecorationImage(
-                image: FileImage(phReverse[index]), // Load image from File
+                image: FileImage(phReverse[index]), 
                 fit: BoxFit.cover,
                 alignment: FractionalOffset(0.5, 0.5)),
           ),
         ),
         onDoubleTap: () {
-          photos.remove(phReverse[index]);
+          print(photos.remove(photos[len-1-index]));
+          
+          
+          saveFiles(photos);
           len--;
-          print(index);
-          print("doubleTap");
+          
         },
       );
     },
   );
+}
+
+Future<void> saveFiles(List<File> files) async {
+  
+  Directory appDocDir = await getApplicationDocumentsDirectory();
+  String appDocPath = appDocDir.path;
+
+ 
+  List<String> newFilePaths = [];
+  
+  int n = 0;
+
+  for (File file in files) {
+    n++;
+    
+    String newPath =
+        '$appDocPath/${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}';
+
+
+    File savedFile = await file.copy(newPath);
+
+
+    newFilePaths.add(savedFile.path);
+   
+  }
+
+ 
+  prefs!.clear();
+  photos = [];
+
+  prefs!.setStringList('saved_files', newFilePaths);
+}
+
+Future<List<File>> getSavedFiles() async {
+  prefs = await SharedPreferences.getInstance();
+  photos = [];
+  //prefs!.clear();
+  
+  List<String>? filePaths = prefs!.getStringList('saved_files');
+
+  if (filePaths != null) {
+    photos = filePaths.map((path) => File(path)).toList();
+    len = photos.length;
+  
+    return [];
+  } else {
+    return [];
+  }
 }
