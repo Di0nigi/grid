@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -19,6 +21,7 @@ var width = 0.0;
 var height = 0.0;
 var len = 0;
 int n = 0;
+double ar = 3 / 4;
 Widget grid = updateGrid();
 
 List<File> photos = [];
@@ -74,8 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             decoration: BoxDecoration(
                 color: Color.fromARGB(255, 0, 0, 0),
-                border: Border.all(
-                    width: 0.1, color: Color.fromARGB(103, 122, 122, 122))),
+                border: BorderDirectional(
+                  top: BorderSide(width: 0.3, color: Color.fromARGB(209, 148, 148, 148))),
+                    ),
             width: width,
             height: height / 20,
             child: Row(
@@ -105,16 +109,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         grid = updateGrid();
                       });
                     }),
+                    IconButton(
+                    icon: Icon(
+                      FluentIcons.grid_16_filled,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (ar == 1.0) {
+                          ar = 3 / 4;
+                        } else if (ar == 3 / 4) {
+                          ar = 1.0;
+                        }
+                        grid = updateGrid();
+                      });
+                    }),
                 IconButton(
                     icon: Icon(
-                      FluentIcons.arrow_sync_circle_16_regular,
+                      FluentIcons.arrow_sync_circle_16_filled,
                       color: Colors.white,
                     ),
                     onPressed: () {
                       setState(() {
                         grid = updateGrid();
                       });
-                    }),
+                    })
+                
               ],
             ),
           )
@@ -143,12 +163,14 @@ Future<void> _pickImage() async {
 Future<CroppedFile?> _cropImage(String imageFile) async {
   return ImageCropper().cropImage(
     sourcePath: imageFile,
+    aspectRatio: CropAspectRatio(ratioX: 3, ratioY: 4),
     aspectRatioPresets: [
+      //CropAspectRatioPreset.ratio3x4
       CropAspectRatioPreset.square,
-      CropAspectRatioPreset.ratio3x2,
-      CropAspectRatioPreset.original,
-      CropAspectRatioPreset.ratio4x3,
-      CropAspectRatioPreset.ratio16x9,
+      //CropAspectRatioPreset.ratio3x2,
+      //CropAspectRatioPreset.original,
+      //CropAspectRatioPreset.ratio4x3,
+      //CropAspectRatioPreset.ratio16x9,
     ],
   );
 }
@@ -157,10 +179,10 @@ Widget updateGrid() {
   getSavedFiles();
   return GridView.builder(
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 3,
-      crossAxisSpacing: 2.0,
-      mainAxisSpacing: 1.0,
-    ),
+        crossAxisCount: 3,
+        crossAxisSpacing: 2.0,
+        mainAxisSpacing: 1.0,
+        childAspectRatio: ar),
     itemCount: len,
     itemBuilder: (context, index) {
       List<File> phReverse = photos.reversed.toList();
