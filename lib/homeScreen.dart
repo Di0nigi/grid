@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'main.dart';
 
+import 'package:grid/photoVis.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -76,10 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-                color: Color.fromARGB(255, 0, 0, 0),
-                border: BorderDirectional(
-                  top: BorderSide(width: 0.3, color: Color.fromARGB(209, 148, 148, 148))),
-                    ),
+              color: Color.fromARGB(255, 0, 0, 0),
+              border: BorderDirectional(
+                  top: BorderSide(
+                      width: 0.3, color: Color.fromARGB(209, 148, 148, 148))),
+            ),
             width: width,
             height: height / 20,
             child: Row(
@@ -109,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         grid = updateGrid();
                       });
                     }),
-                    IconButton(
+                IconButton(
                     icon: Icon(
                       FluentIcons.grid_16_filled,
                       color: Colors.white,
@@ -134,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         grid = updateGrid();
                       });
                     })
-                
               ],
             ),
           )
@@ -146,14 +148,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
 Future<void> _pickImage() async {
   final picker = ImagePicker();
-  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-  File? _image;
+  //final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  final List<XFile>? images = await picker.pickMultiImage();
+
+  /*File? _image;
 
   if (pickedFile != null) {
     _image = File((await _cropImage(pickedFile.path))!.path);
 
     photos.add(_image);
     len++;
+    saveFiles(photos);
+  } else {
+    print('No image selected.');
+  }*/
+
+  if (images != null) {
+    for (XFile im in images) {
+      //print(im);
+      File? _image;
+
+      _image = File((await _cropImage(im.path))!.path);
+
+      photos.add(_image);
+      //print("eoe2");
+      //print(images.length);
+      len++;
+    }
     saveFiles(photos);
   } else {
     print('No image selected.');
@@ -177,6 +198,8 @@ Future<CroppedFile?> _cropImage(String imageFile) async {
 
 Widget updateGrid() {
   getSavedFiles();
+  print("len");
+  print(photos.length);
   return GridView.builder(
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -203,6 +226,14 @@ Widget updateGrid() {
 
           saveFiles(photos);
           len--;
+        },
+        onTap: (){
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PhotoVis( dispPhoto: phReverse[index])),
+            );
+
         },
       );
     },
